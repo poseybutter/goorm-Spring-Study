@@ -12,7 +12,11 @@ import jakarta.annotation.PreDestroy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -36,28 +40,29 @@ public class StudyLogRepository {
     // ID 자동 증가를 위한 시퀀스
     private final AtomicLong sequence = new AtomicLong(1);
 
-    /**
-     * @PostConstruct: Bean 생성 및 의존성 주입 완료 후 실행
-     * 초기 데이터 설정, 리소스 초기화 등에 활용
-     */
+    // ========== 생명주기 콜백 ==========
+
     @PostConstruct
-    public void init() {
-        System.out.println("🚀 StudyLogRepository 초기화 완료!");
-        System.out.println("📦 데이터베이스(Map) 준비 완료!");
-
-        // 테스트용 초기 데이터 추가 (선택사항)
-        // initSampleData();
+    public void initCallback() {
+        System.out.println("========================================");
+        System.out.println("📦 StudyLogRepository 초기화 완료!");
+        System.out.println("   - 데이터 저장소(Map) 준비됨");
+        System.out.println("   - ID 생성기 준비됨");
+        System.out.println("========================================");
     }
 
-    /**
-     * @PreDestroy: Bean 소멸 전 실행
-     * 리소스 정리, 연결 해제 등에 활용
-     */
     @PreDestroy
-    public void destroy() {
-        System.out.println("🔚 StudyLogRepository 종료!");
-        System.out.println("🗑️ 저장된 데이터 개수: " + database.size());
+    public void cleanup() {
+        System.out.println("========================================");
+        System.out.println("🧹 StudyLogRepository 정리 중...");
+        System.out.println("   - 저장된 데이터 수: " + database.size());
+        System.out.println("   - 마지막 ID: " + (sequence.get() - 1));
+        database.clear();  // 데이터 정리
+        System.out.println("   - 데이터 정리 완료!");
+        System.out.println("========================================");
     }
+
+    // ========== CREATE ==========
 
     /**
      * 학습 일지 저장 (Create)
@@ -72,7 +77,6 @@ public class StudyLogRepository {
 
         // Map에 저장
         database.put(studyLog.getId(), studyLog);
-
         return studyLog;
     }
 
@@ -118,7 +122,7 @@ public class StudyLogRepository {
     }
 
     /**
-     * 전체 학습 일지 조회 (최신순 정렬) -> Day2에서 구현
+     * 전체 학습 일지 조회 (최신순 정렬)
      */
     public List<StudyLog> findAll() {
         return database.values().stream()
@@ -171,7 +175,14 @@ public class StudyLogRepository {
     public void deleteAll() {
         database.clear();
     }
-    // Repository - Soft Delete 구현
+
+    // ========== Soft Delete ==========
+
+    /**
+     * Soft Delete 처리 (deleted=true, deletedAt 기록)
+     * @param id 삭제할 학습 일지 ID
+     * @return 삭제 성공 여부
+     */
     public boolean softDeleteById(Long id) {
         StudyLog studyLog = database.get(id);
         if (studyLog == null || studyLog.isDeleted()) {
@@ -183,7 +194,9 @@ public class StudyLogRepository {
         return true;
     }
 
-    // 삭제되지 않은 데이터만 조회
+    /**
+     * 삭제되지 않은 데이터만 조회 (최신순 정렬)
+     */
     public List<StudyLog> findAllActive() {
         return database.values().stream()
                 .filter(log -> !log.isDeleted())
@@ -191,7 +204,9 @@ public class StudyLogRepository {
                 .collect(Collectors.toList());
     }
 
-    // 삭제된 데이터 복구
+    /**
+     * Soft Delete된 데이터 복구
+     */
     public boolean restore(Long id) {
         StudyLog studyLog = database.get(id);
         if (studyLog == null || !studyLog.isDeleted()) {
@@ -203,27 +218,7 @@ public class StudyLogRepository {
         return true;
     }
 
-    // ========== 생명주기 콜백 ==========
-
-    @PostConstruct
-    public void initCallback() {
-        System.out.println("========================================");
-        System.out.println("📦 StudyLogRepository 초기화 완료!");
-        System.out.println("   - 데이터 저장소(Map) 준비됨");
-        System.out.println("   - ID 생성기 준비됨");
-        System.out.println("========================================");
-    }
-
-    @PreDestroy
-    public void cleanup() {
-        System.out.println("========================================");
-        System.out.println("🧹 StudyLogRepository 정리 중...");
-        System.out.println("   - 저장된 데이터 수: " + database.size());
-        System.out.println("   - 마지막 ID: " + (sequence.get() - 1));
-        database.clear();  // 데이터 정리
-        System.out.println("   - 데이터 정리 완료!");
-        System.out.println("========================================");
-    }
+    // ========== Paging ==========
 
     /**
      * 페이징 처리된 학습 일지 조회
