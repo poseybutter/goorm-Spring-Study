@@ -14,6 +14,7 @@ import com.study.my_spring_study_diary.global.common.PageResponse;
 // import com.study.my_spring_study_diary.repository.StudyLogRepository;
 import com.study.my_spring_study_diary.dao.StudyLogDao;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -457,4 +458,29 @@ public class StudyLogService {
                 : comparator.reversed();
     }
 
+    @Transactional  // 트랜잭션 처리
+    public void transferStudyTime(Long fromId, Long toId, int minutes) {
+        // StudyLog from = repository.findById(fromId); // (기존 코드) repository 사용
+        // StudyLog to = repository.findById(toId);     // (기존 코드) repository 사용
+        StudyLog from = studyLogDao.findById(fromId)
+                .orElseThrow(() -> new ResourceNotFoundException("학습 일지를 찾을 수 없습니다. id=" + fromId));
+        StudyLog to = studyLogDao.findById(toId)
+                .orElseThrow(() -> new ResourceNotFoundException("학습 일지를 찾을 수 없습니다. id=" + toId));
+
+        if (minutes <= 0) {
+            throw new IllegalArgumentException("이동할 시간은 1분 이상이어야 합니다.");
+        }
+        if (from.getStudyTime() < minutes) {
+            throw new IllegalArgumentException("학습 시간이 부족합니다.");
+        }
+
+        from.setStudyTime(from.getStudyTime() - minutes);
+        to.setStudyTime(to.getStudyTime() + minutes);
+
+        // repository.update(from); // (기존 코드) repository 사용
+        // repository.update(to);   // (기존 코드) repository 사용
+        studyLogDao.update(from);
+        studyLogDao.update(to);
+        // 예외 발생 시 자동 롤백
+    }
 }
