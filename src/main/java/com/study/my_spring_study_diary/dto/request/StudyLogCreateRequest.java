@@ -2,14 +2,20 @@ package com.study.my_spring_study_diary.dto.request;
 
 import java.time.LocalDate;
 
+/**
+ * 학습 일지 수정 요청 DTO
+ *
+ * CREATE와 달리 모든 필드가 선택적입니다.
+ * null이면 기존 값을 유지합니다.
+ */
 // 요청 DTO
 public class StudyLogCreateRequest {
-    private String title;
-    private String content;
-    private String category;
-    private String understanding;
-    private Integer studyTime;
-    private LocalDate studyDate;
+    private String title;          // null이면 기존 값 유지
+    private String content;        // null이면 기존 값 유지
+    private String category;       // null이면 기존 값 유지
+    private String understanding;  // null이면 기존 값 유지
+    private Integer studyTime;     // null이면 기존 값 유지
+    private LocalDate studyDate;   // null이면 기존 값 유지
 
     // 기본 생성자 (JSON 역직렬화를 위해 필요)
     public StudyLogCreateRequest() {
@@ -30,4 +36,17 @@ public class StudyLogCreateRequest {
     public void setUnderstanding(String understanding) { this.understanding = understanding; }
     public void setStudyTime(Integer studyTime) { this.studyTime = studyTime; }
     public void setStudyDate(LocalDate studyDate) { this.studyDate = studyDate; }
+
+        /**
+     * 모든 필드가 null인지 확인
+     * 아무것도 수정할 내용이 없는 경우 체크용
+     */
+    public boolean hasNoUpdates() {
+        return title == null
+            && content == null
+            && category == null
+            && understanding == null
+            && studyTime == null
+            && studyDate == null;
+    }
 }
