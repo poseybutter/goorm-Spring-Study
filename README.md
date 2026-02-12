@@ -300,49 +300,6 @@ src/
         └── dao/StudyLogDaoTest.java
 ```
 
-## 구현 단계
-
-### Day 0: Spring Boot 소개
-- [x] Spring Boot 프로젝트 초기 설정
-- [x] 기본 컨트롤러 테스트 (HelloController)
-- [x] 프로젝트 패키지 구조 설계
-
-### Day 1: 학습 일지 API 만들기 - CREATE ✅
-- [x] StudyLog 엔티티 설계
-- [x] Category, Understanding Enum 정의
-- [x] StudyLogCreateRequest DTO 작성
-- [x] StudyLogResponse DTO 작성
-- [x] StudyLogRepository 구현 (Map 기반)
-- [x] StudyLogService - 생성 로직 구현
-- [x] StudyLogController - POST API 구현
-- [x] ApiResponse 공통 응답 래퍼 작성
-- [x] Logger 추가 (요청/응답 로깅)
-- [x] 유효성 검증 로직 구현
-- [x] API 테스트 완료
-
-### Day 2: 학습 일지 API 만들기 - READ ⏳
-- [ ] StudyLogService - 조회 로직 구현
-  - [ ] 전체 목록 조회
-  - [ ] 상세 조회 (ID 기반)
-- [ ] StudyLogController - GET API 구현
-  - [ ] GET /api/v1/logs (목록 조회)
-  - [ ] GET /api/v1/logs/{id} (상세 조회)
-- [ ] ResourceNotFoundException 예외 처리
-
-### Day 3: 학습 일지 API 만들기 - UPDATE ⏳
-- [ ] StudyLogUpdateRequest DTO 작성
-- [ ] StudyLogService - 수정 로직 구현
-- [ ] StudyLogController - PUT API 구현
-  - [ ] PUT /api/v1/logs/{id}
-- [ ] 수정 시 예외 처리 (존재하지 않는 리소스)
-
-### Day 4: 학습 일지 API 만들기 - DELETE ⏳
-- [ ] StudyLogService - 삭제 로직 구현
-- [ ] StudyLogController - DELETE API 구현
-  - [ ] DELETE /api/v1/logs/{id}
-- [ ] 삭제 시 예외 처리
-- [ ] 전체 API 테스트 및 검증
-
 ## 개발 환경
 
 - IDE: IntelliJ IDEA / VS Code
