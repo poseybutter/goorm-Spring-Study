@@ -306,6 +306,73 @@ src/
 - OS: macOS
 - Java Version: 17
 
+## 트러블슈팅 기록
+
+### Issue #1: BadSqlGrammarException - 테이블명 불일치 오류
+
+#### 증상
+```
+500 Internal Server Error
+org.springframework.jdbc.BadSqlGrammarException: 
+Table 'diary_db.diary_logs' doesn't exist
+```
+POST 요청으로 데이터를 저장하려고 할 때 위와 같은 오류가 발생했습니다.
+
+#### 원인
+
+**비유로 이해하기:**
+> 친구에게 "빨간 상자에 물건 넣어줘"라고 했는데, 실제로는 "파란 상자"만 있는 상황이에요.
+> 코드는 `diary_logs` 테이블을 찾는데, 데이터베이스에는 `diary_entries` 테이블만 있었던 거죠.
+
+**구체적인 원인:**
+1. **DAO(데이터 접근 코드)**에서는 `diary_logs` 테이블에 데이터를 넣으려고 했습니다.
+   ```java
+   INSERT INTO diary_logs (title, content, ...) VALUES (?, ?, ...)
+   ```
+
+2. 하지만 **DB 초기화 스크립트**(schema.sql)는 `diary_entries` 테이블을 만들었습니다.
+   ```sql
+   CREATE TABLE diary_entries (...)
+   ```
+
+3. Spring Boot가 실행되면서 schema.sql이 실행되어 `diary_entries` 테이블은 만들어졌지만,  
+   실제 코드는 `diary_logs`를 찾으니까 "테이블이 없다"는 오류가 발생한 것입니다.
+
+**왜 이런 일이?**
+- 개발 중에 테이블명을 변경하면서 **DAO 코드와 SQL 스크립트를 함께 수정하지 않아서** 발생했습니다.
+- 즉, **코드와 DB 스키마의 불일치**가 원인이었습니다.
+
+#### 해결 방법
+
+모든 파일에서 테이블명을 **`diary_entries`** 로 통일했습니다.
+
+**수정한 파일:**
+1. `MySQLStudyLogDaoImpl.java` - 모든 SQL 쿼리의 테이블명 수정
+2. `schema.sql` - 테이블 생성 및 인덱스 생성 구문 수정
+3. `init.sql` - 초기화 스크립트의 테이블명 수정
+4. `data.sql` - 테스트 데이터 삽입 구문의 테이블명 수정
+
+#### 배운 점
+
+1. **일관성이 중요하다**  
+   코드와 데이터베이스 스키마는 항상 일치해야 합니다. 하나를 바꾸면 관련된 모든 곳을 함께 바꿔야 해요.
+
+2. **에러 메시지를 잘 읽자**  
+   `Table 'diary_db.diary_logs' doesn't exist`라는 메시지가 핵심 힌트였습니다.  
+   "어떤 테이블을 찾았는데 없다"는 뜻이니, 실제 DB에 그 테이블이 있는지 확인하면 됩니다.
+
+3. **변경 시 체크리스트**  
+   - [ ] DAO/Repository의 SQL 쿼리
+   - [ ] DB 초기화 스크립트 (schema.sql, init.sql)
+   - [ ] 테스트 데이터 스크립트 (data.sql)
+   - [ ] Entity 클래스 (JPA 사용 시 @Table 어노테이션)
+
+4. **개발 중에는 DB를 자주 초기화하자**  
+   Docker를 사용한다면 `docker-compose down -v && docker-compose up -d`로  
+   볼륨까지 삭제하고 재시작하면 깨끗한 상태로 테스트할 수 있습니다.
+
+---
+
 ## 라이센스
 
 개인 학습 목적으로 만든 프로젝트입니다.

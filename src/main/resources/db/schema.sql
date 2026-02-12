@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS diary_entries (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     user_id BIGINT,
+    category VARCHAR(50),
+    understanding VARCHAR(50),
+    study_time INT,
+    study_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
